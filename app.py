@@ -1,10 +1,11 @@
-from flask import Flask, request, send_from_directory, jsonify
-import json
+from flask import Flask, request, send_from_directory, jsonify, redirect, url_for, \
+    render_template
+import os, json, boto3
 from shapely.geometry import Point, Polygon
 
 app = Flask(__name__)
 
-fileName = '/Users/sammorrow/Desktop/untitled1/challenge/vehicles-location.json'
+fileName = './vehicles-location.json'
 
 
 @app.route('/')
