@@ -1,56 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <meta charset="UTF-8">
-    <title>Fleet Manager tools</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <script type="text/javascript"
-            src="https://maps.google.com/maps/api/js?key=AIzaSyAFMw8EIo85__hc6c8DjBGyydxicquxLcc&libraries=drawing"></script>
+            src="https://maps.google.com/maps/api/js?key=AIzaSyAFMw8EIo85__hc6c8DjBGyydxicquxLcc&libraries=drawing,places"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+    <title>Fleet Manager tools</title>
     <style type="text/css">
-        #map, html, body {
+        html, body {
             padding: 0;
             margin: 0;
             height: 100%;
+            width: 100%
         }
 
-        #panel {
-            width: 200px;
-            font-family: Arial, sans-serif;
-            font-size: 13px;
-            float: right;
-            margin: 10px;
+        .navbar {
+            position: absolute;
+            background-color: #fff;
+            padding: 0;
+        }
+        {#Had trouble getting the exact positioning right#}
+        #map {
+            position:relative;
+            margin-top: 40px;
+            width: 100%;
+            height: 95%;
+        }
+        .site-header #show-all-vehicles {
+            margin-top: 3px;
+            font-size: 10px;
         }
 
-        #color-palette {
-            clear: both;
+        ul {
+            margin: 0;
         }
 
-        .color-button {
-            width: 14px;
-            height: 14px;
-            font-size: 0;
-            margin: 2px;
-            float: left;
-            cursor: pointer;
+        .site-header .navbar-nav .nav-link {
+            color: #120b27;
         }
 
-        #delete-button {
-            margin-top: 5px;
+        .site-header .navbar-nav .nav-link:hover {
+            color: #ffffff;
         }
 
-        #show-all-vehicles {
-            margin-top: 5px;
+        #site-header .navbar-nav {
+            font-weight: 500;
         }
+      .pac-controls label {
+          font-family: Roboto, sans-serif;
+        font-size: 13px;
+        font-weight: 300;
+      }
+
+      #pac-input {
+        background-color: #fff;
+          font-family: Roboto, sans-serif;
+        font-size: 15px;
+        font-weight: 300;
+        margin-left: 12px;
+        padding: 0 11px 0 13px;
+        text-overflow: ellipsis;
+        width: 400px;
+      }
+
+      #pac-input:focus {
+        border-color: #4d90fe;
+      }
     </style>
     <script type="text/javascript">
 
         var drawingManager;
         var selectedShape;
-        var colors = ['#010515', '#09a7ff'];
-        var selectedColor;
         var coordinates = {};
-        var colorButtons = {};
         var vehicle = {
             "id": null,
             "state": null,
@@ -74,10 +100,9 @@
                 }
                 selectedShape = null;
             }
-            curseldiv.innerHTML = "<b>No Selected Area</b>:";
         }
 
-        function updateCurSelText(shape) {
+        function get_polygon_path(shape) {
             posstr = "" + selectedShape.position;
             if (typeof selectedShape.position == 'object') {
                 posstr = selectedShape.position.toUrlValue();
@@ -88,21 +113,20 @@
                 for (var i = 0; i < selectedShape.getPath().getLength(); i++) {
                     // .toUrlValue(5) limits number of decimals, default is 6 but can do more
                     pathstr += selectedShape.getPath().getAt(i).toUrlValue(10) + " , ";
-                    coordinates[i] = selectedShape.getPath().getAt(i).toUrlValue(10)
-
+                    coordinates[i] = selectedShape.getPath().getAt(i).toUrlValue(10);
+                    console.log(selectedShape.getPath().getAt(i).toUrlValue(10))
                 }
                 pathstr += "]";
-                pathstr = pathstr.replace(' , ]', ']')
+                pathstr = pathstr.replace(' , ]', ']');
                 return_locations_in_polygon(pathstr)
             }
-            curseldiv.innerHTML = "<b>Selected Area</b>: " + selectedShape.type + " ; <i>Path Coordinates</i>: " + pathstr + " ";
         }
 
-        function return_locations_in_polygon(pathstr){
+        function return_locations_in_polygon(pathstr) {
             pathstr = pathstr.replace('[ ', '');
             pathstr = pathstr.replace(']', '');
-            var dataToSend = {"coordinates": pathstr};
-            var dataJSONed = JSON.stringify(dataToSend);
+            const dataToSend = {"coordinates": pathstr};
+            const dataJSONed = JSON.stringify(dataToSend);
             $.ajax({
                 url: '/api/return_locations_in_polygon',
                 data: dataJSONed,
@@ -131,7 +155,9 @@
         function get_all_locations(vehicle) {
             clearOverlays();
             clearSelection();
-            if (shape != null) {shape.setMap(null);}
+            if (shape != null) {
+                shape.setMap(null);
+            }
             $.ajax({
                 url: '/api/return_all_locations',
                 data: JSON.stringify({"status": "Show all vehicle locations"}),
@@ -168,7 +194,8 @@
                 draggable: true,
                 position: latlng,
                 map: map,
-                title: "Vehicle ID: " + vehicle['id'],
+                title: 'Vehicle ID: ' + vehicle['id'],
+                icon: 'http://maps.google.com/mapfiles/kml/shapes/cabs.png'
             });
             contentString = "Vehicle ID: " + vehicle['id'] + "<br>" + "State: " + vehicle['state'] + "<br>" +
                 "routeCommitId: " + vehicle['routeCommitId'] + "<br>" + "Number of steats: " + vehicle['seats'] + "<br>" +
@@ -198,11 +225,10 @@
             selectedShape = shape;
             if (isNotMarker)
                 shape.setEditable(true);
-            selectColor(shape.get('fillColor') || shape.get('strokeColor'));
-            updateCurSelText(shape);
+            get_polygon_path(shape);
         }
 
-        function deleteSelectedShape() {
+        function deleteShape() {
             clearOverlays();
             if (selectedShape) {
                 selectedShape.setMap(null);
@@ -214,47 +240,10 @@
 
         function clearOverlays() {
             if (markersArray) {
-                for (var i in markersArray) {
+                for (let i in markersArray) {
                     markersArray[i].setMap(null);
                 }
             }
-        }
-
-        function selectColor(color) {
-            selectedColor = color;
-            for (var i = 0; i < colors.length; ++i) {
-                var currColor = colors[i];
-                colorButtons[currColor].style.border = currColor === color ? '2px solid #789' : '2px solid #fff';
-            }
-            // Retrieves the current options from the drawing manager and replaces the
-            // stroke or fill color as appropriate.
-
-            var polygonOptions = drawingManager.get('polygonOptions');
-            polygonOptions.strokeColor = color;
-            polygonOptions.fillColor = color;
-            drawingManager.set('polygonOptions', polygonOptions);
-        }
-
-        function makeColorButton(color) {
-            var button = document.createElement('span');
-            button.className = 'color-button';
-            button.style.backgroundColor = color;
-            google.maps.event.addDomListener(button, 'click', function () {
-                selectColor(color);
-                setSelectedShapeColor(color);
-            });
-            return button;
-        }
-
-        function buildColorPalette() {
-            var colorPalette = document.getElementById('color-palette');
-            for (var i = 0; i < colors.length; ++i) {
-                var currColor = colors[i];
-                var colorButton = makeColorButton(currColor);
-                colorPalette.appendChild(colorButton);
-                colorButtons[currColor] = colorButton;
-            }
-            selectColor(colors[0]);
         }
 
         function setBounds() {
@@ -264,13 +253,12 @@
             }
             map.fitBounds(bounds, 5);
         }
+
         /////////////////////////////////////
-        var map; //= new google.maps.Map(document.getElementById('map'), {
-        // these must have global refs too!:
+        //Global vars used during during init
+        var map;
         var shape = null;
         var markersArray = [];
-        var curposdiv;
-        var curseldiv;
         var bounds;
 
         /////////////////////////////////////
@@ -278,25 +266,26 @@
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 12,//10,
                 center: new google.maps.LatLng(51.510357, -0.116773),//Coordinates of Big Ben in London
-                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeId: 'roadmap',
                 disableDefaultUI: false,
+                mapTypeControl: false,
                 zoomControl: true
             });
 
-            curposdiv = document.getElementById('curpos');
-            curseldiv = document.getElementById('cursel');
-
             var polyOptions = {
+                strokeColor: '#010515',
+                fillColor: '#010515',
                 strokeWeight: 3,
                 fillOpacity: 0.45,
                 editable: true
+
             };
             // Creates a drawing manager attached to the map that allows the user to add
             // markers and draw polygons nad polylines
             drawingManager = new google.maps.drawing.DrawingManager({
                 drawingMode: google.maps.drawing.OverlayType.POLYGON,
                 drawingControlOptions: {
-                    position: google.maps.ControlPosition.TOP_CENTER,
+                    position: google.maps.ControlPosition.TOP_LEFT,
                     drawingModes: ['marker', 'polygon']
                 },
                 markerOptions: {
@@ -313,8 +302,8 @@
 
                 // Once a secondary shape is drawn, the previous shape is deleted, and all of the vehicle locations
                 // inside that shape are cleared.
-                if (markersArray != null){clearOverlays();}
-                if (shape != null) {shape.setMap(null);}
+                if (markersArray != null) { clearOverlays(); }
+                if (shape != null) { shape.setMap(null); }
                 // Switch back to non-drawing mode after drawing a shape.
                 drawingManager.setDrawingMode(null);
 
@@ -326,52 +315,109 @@
                     setSelection(shape, isNotMarker);
                 });
                 google.maps.event.addListener(shape, 'drag', function () {
-                    updateCurSelText(shape);
+                    get_polygon_path(shape);
                 });
                 google.maps.event.addListener(shape, 'dragend', function () {
-                    updateCurSelText(shape);
+                    get_polygon_path(shape);
                 });
                 setSelection(shape, isNotMarker);
                 //~ }// end if
             });
 
-            // Clears the current selection when the drawing mode is changed
+            // Listener that clears the current selection when the drawing mode is changed
             google.maps.event.addListener(drawingManager, 'drawingmode_changed', clearSelection);
 
-            // Clears the current selection when the map is clicked
+            // Listener that clears the current selection when the map is clicked
             google.maps.event.addListener(map, 'click', clearSelection);
 
-            // Deletes the current selected shape when the Delete button is clicked
-            google.maps.event.addDomListener(document.getElementById('delete-button'), 'click', deleteSelectedShape);
+            // Listener that clears the current selection when the map is clicked
+            google.maps.event.addListener(map, 'keydown', deleteShape());
 
-            // Sends a HTTP POST request to retrieve all vehicle data and locations when the Show all vehicles data is clicked
-            document.getElementById("show-all-vehicles").addEventListener("click", function(){get_all_locations(vehicle)});
+            // Listener that sends a HTTP POST request to retrieve all vehicle data and locations when the Show all vehicles data is clicked
+            document.getElementById("show-all-vehicles").addEventListener("click", function () {
+                get_all_locations(vehicle)
+            });
 
-            buildColorPalette();
+            // Create the search box and link it to the UI element.
+            var input = document.getElementById('pac-input');
+            var searchBox = new google.maps.places.SearchBox(input);
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
+            // Bias the SearchBox results towards current map's viewport.
+            map.addListener('bounds_changed', function () {
+                searchBox.setBounds(map.getBounds());
+            });
+
+            var markers = [];
+            // Listen for the event fired when the user selects a prediction and retrieve
+            // more details for that place.
+            searchBox.addListener('places_changed', function () {
+                var places = searchBox.getPlaces();
+
+                if (places.length === 0) {
+                    return;
+                }
+
+                // Clear out the old markers.
+                markers.forEach(function (marker) {
+                    marker.setMap(null);
+                });
+                markers = [];
+
+                // For each place, get the icon, name and location.
+                places.forEach(function (place) {
+                    if (!place.geometry) {
+                        console.log("Returned place contains no geometry");
+                        return;
+                    }
+                    var icon = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
+
+                    // Create a marker for each place.
+                    markers.push(new google.maps.Marker({
+                        map: map,
+                        icon: icon,
+                        title: place.name,
+                        position: place.geometry.location
+                    }));
+
+                    if (place.geometry.viewport) {
+                        // Only geocodes have viewport.
+                        bounds.union(place.geometry.viewport);
+                    } else {
+                        bounds.extend(place.geometry.location);
+                    }
+                });
+                map.fitBounds(bounds);
+            });
         }
 
         google.maps.event.addDomListener(window, 'load', initialize);
+
     </script>
 </head>
 <body>
-<div id="panel">
-    <div id="color-palette"></div>
-    <div>
-        <button id="delete-button">Delete Selected Shape</button>
-    </div>
-    <div>
-        <div>
-            <button id="show-all-vehicles" type="submit">Show all vehicles</button>
+<header class="site-header">
+    <nav class="navbar navbar-fixed-top navbar-dark bg-info fixed-top">
+        <div class="container">
+            <a class="navbar-brand mr-4">Autofleet - Fleet Manager Tools</a>
+            <a class="btn btn-md btn-primary btn" id="show-all-vehicles" type="submit"><b>Show all
+                        vehicles</b></a>
         </div>
-    </div>
-    <div id="curpos"></div>
-    <div id="cursel"></div>
-    <div id="note"><small>Note: markers can be selected, but are not graphically indicated; can be deleted, but cannot
-        have their color changed.</small></div>
-</div>
-<!-- TODO: Implement search box across top bar of the site-->
-    <input id="pac-input" type="text" placeholder="Search Box">
+    </nav>
+</header>
+<input id="pac-input" class="controls" type="text" placeholder="Search Box">
 <div id="map">A</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 </body>
 </html>
