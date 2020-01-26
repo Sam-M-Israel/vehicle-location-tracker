@@ -5,7 +5,7 @@ from shapely.wkt import loads as load_wkt
 
 app = Flask(__name__)
 
-fileName = './vehicles-location.json'
+fileName = '/app/vehicles-location.json'
 
 
 @app.route('/')
