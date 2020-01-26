@@ -107,12 +107,13 @@
         */
         function get_polygon_path(shape) {
             if (typeof selectedShape.getPath == 'function') {
-                pathstr = "[ ";
+                pathstr = "POLYGON((";
                 for (var i = 0; i < selectedShape.getPath().getLength(); i++) {
-                    pathstr += selectedShape.getPath().getAt(i).toUrlValue(10) + " , ";
+                    point = selectedShape.getPath().getAt(i)
+                    pathstr += point.lng()+' '+point.lat()+',';
                 }
-                pathstr += "]";
-                pathstr = pathstr.replace(' , ]', ']');
+                point = selectedShape.getPath().getAt(0)
+                pathstr += point.lng()+' '+point.lat()+"))";
                 return_locations_in_polygon(pathstr)
             }
         }
@@ -125,9 +126,7 @@
         */
         function return_locations_in_polygon(pathstr) {
             isPoly = true;
-            pathstr = pathstr.replace('[ ', '');
-            pathstr = pathstr.replace(']', '');
-            const dataToSend = {"coordinates": pathstr};
+            const dataToSend = {"shape": pathstr};
             const dataJSONed = JSON.stringify(dataToSend);
             $.ajax({
                 url: '/api/return_locations_in_polygon',
