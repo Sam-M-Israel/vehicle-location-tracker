@@ -4,7 +4,7 @@ from shapely.geometry import Point, Polygon
 
 app = Flask(__name__)
 
-fileName = './app/vehicles-location.json'
+fileName = './vehicles-location.json'
 
 
 @app.route('/')
