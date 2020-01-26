@@ -4,7 +4,7 @@ from shapely.geometry import Point, Polygon
 
 app = Flask(__name__)
 
-fileName = './vehicles-location.json'
+fileName = '/Users/sammorrow/Desktop/sams-challenge/vehicles-location.json'
 
 
 @app.route('/')
@@ -15,12 +15,16 @@ def hello_world():
 
 @app.route('/api/return_locations_in_polygon', methods=['POST'])
 def return_locations_in_polygon():
+    print("reached here")
     data = request.json
+    print(data)
     vehicleData = []
     try:
+        print("entered try")
         with open(fileName) as f:
             vehiclesSelect = json.loads(f.read())
         dataReceived = json.dumps(data)
+        print(dataReceived)
         dataReceived = dataReceived[17:len(dataReceived) - 2]
         tuples = [tuple(float(y) for y in x.split(",")) for x in
                   dataReceived.split(" , ")]
@@ -30,6 +34,7 @@ def return_locations_in_polygon():
                       vehiclesSelect[i].get('location').get('lng'))
             if polygon.contains(p):
                 vehicleData.append(vehiclesSelect[i])
+        print(vehicleData)
         return jsonify(vehicleData)
     except IOError:
         print("polygon error reached")
