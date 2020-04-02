@@ -1,6 +1,6 @@
 from flask import Flask, request, send_from_directory, jsonify
 import json
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point
 from shapely.wkt import loads as load_wkt
 
 app = Flask(__name__)
